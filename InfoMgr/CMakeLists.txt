@@ -16,7 +16,7 @@ endif()
 find_package(libpqxx CONFIG REQUIRED)
 target_link_libraries( InfoMgr PRIVATE libpqxx::pqxx )
 
-set(OpenCV_DIR "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv2")
+#set(OpenCV_DIR "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv2")
 find_package(OpenCV REQUIRED)
 
 # Additional Include Directories
