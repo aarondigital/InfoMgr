@@ -15,6 +15,8 @@ public:
     vector<string> note_category;
     string note_text;
     string note_text_type;
+    Note(int, string, string);
+    Note();
 };
 
 class Task {
