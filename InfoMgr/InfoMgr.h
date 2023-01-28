@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <filesystem>
-#include <pqxx/pqxx>
 #include "ImageProc.h"
 
 // TODO: Reference additional headers your program requires here.

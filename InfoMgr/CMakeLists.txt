@@ -3,7 +3,7 @@
 #
 
 # Add source to this project's executable.
-add_executable (InfoMgr "InfoMgr.cpp" "InfoMgr.h" "ImageProc.cpp" "ImageProc.h")
+add_executable (InfoMgr "InfoMgr.cpp" "InfoMgr.h" "ImageProc.cpp" "ImageProc.h" "TaskMgr.cpp" "DB.h" "DB.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET InfoMgr PROPERTY CXX_STANDARD 17)
