@@ -7,3 +7,4 @@ project ("InfoMgr")
 
 # Include sub-projects.
 add_subdirectory ("InfoMgr")
+add_subdirectory ("InfoGUI")
