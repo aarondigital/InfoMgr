@@ -2,12 +2,18 @@
 
 
 using namespace std;
-
+//using namespace DB;
 
 int main(int argc, char** argv)
 {
-	cout << "GUI goes here" << endl;
-    
+    cout << "Giddy up..." << endl;
+
+    string status_text = "";
+    auto static db = DB();
+    Note curr_note;
+
+    vector<Note> notes;
+
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
     // depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to the latest version of SDL is recommended!)
@@ -28,9 +34,9 @@ int main(int argc, char** argv)
         SDL_Log("Error creating SDL_Renderer!");
         return 0;
     }
-    //SDL_RendererInfo info;
-    //SDL_GetRendererInfo(renderer, &info);
-    //SDL_Log("Current SDL_Renderer: %s", info.name);
+    SDL_RendererInfo info;
+    SDL_GetRendererInfo(renderer, &info);
+    SDL_Log("Current SDL_Renderer: %s", info.name);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -56,7 +62,7 @@ int main(int argc, char** argv)
     // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
+    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
@@ -64,12 +70,24 @@ int main(int argc, char** argv)
     //IM_ASSERT(font != NULL);
 
     // Our state
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     bool show_another_window = false;
+    bool show_notes_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     // Main loop
     bool done = false;
+
+    // Save ini somewhere more predictable
+    string ini_file = "infomgr.ini";
+    if (getenv("HOME") != nullptr) {
+        ini_file = getenv("HOME") + (string)"/" + ini_file;
+    }
+    else if (getenv("USERPROFILE") != nullptr) {
+        string ini_file = getenv("USERPROFILE") + (string)"/" + ini_file;
+    }
+    io.IniFilename = ini_file.c_str();
+
     while (!done)
     {
         // Poll and handle events (inputs, window resize, etc.)
@@ -98,24 +116,45 @@ int main(int argc, char** argv)
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
+         
+            ImGui::Begin("Main");                          // Create a window called "Hello, world!" and append into it.
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Text("Aaron Knowledge Centre v1.0");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
+            if (ImGui::Button("Button")) {
+                // Buttons return true when clicked (most widgets return true when edited/activated)
+                status_text = "Fetch notes...";
+                notes = db.getNotes();
+                status_text = "Notes fetched";
+                cout << status_text << endl;
+            }
+            
             ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+            ImGui::Text(status_text.c_str());
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            if (notes.size() > 0) {
+                ImGui::BeginListBox("Notes", ImVec2(0, 0));
+                for (auto n : notes) {
+                    if (ImGui::Selectable(n.note_name.c_str())) {
+                        cout << "Note to read " << n.note_id << endl;
+                        curr_note = n;
+                        show_notes_window = true;
+                    }
+
+                }
+                ImGui::EndListBox();
+            }
+
+            //ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+
+        }
+
+        if (show_notes_window) {
+            ImGui::Begin("Notes", &show_notes_window);
+            ImGui::Text(curr_note.note_text.c_str());
             ImGui::End();
         }
 
@@ -130,6 +169,7 @@ int main(int argc, char** argv)
         }
 
         // Rendering
+
         ImGui::Render();
         SDL_SetRenderDrawColor(renderer, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
         SDL_RenderClear(renderer);
@@ -146,6 +186,7 @@ int main(int argc, char** argv)
     SDL_DestroyWindow(window);
     SDL_Quit();
 
+    db.close();
     
     return 0;
 }
